@@ -103,9 +103,9 @@ end do
 r_ev_ts(:, nyears-1, :)= ev_ts(:, (nyears-1)*143: ) + 0
 ;
 ;; output 
-s_DirOut = "/global/cfs/cdirs/m1867/zmchen/Work/2023_1/BSISO_SW_Heatwave/Data/Bimodal_index/"
+s_DirOut = "./"
 system("mkdir -p " + s_DirOut)
-s_FileOut           = s_DirOut + "cal_eeof_olr_inReanalysis.nc"
+s_FileOut           = s_DirOut + "EEOF_OLR.nc"
 system("rm -rf " + s_FileOut)
 FileOut             = addfile(s_FileOut, "c")
 GAttr               = True
