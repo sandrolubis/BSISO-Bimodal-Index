@@ -1,5 +1,5 @@
 # Construct BSISO Index
 
 <p align="center">
-  <img src="https://github.com/sandrolubis/BSISO_Index/blob/main/bsiso_plots.png" width="500">
+  <img src="https://github.com/sandrolubis/BSISO_Index/blob/main/bsiso_plots.png" width="700">
 </p>
