@@ -47,7 +47,7 @@ do i = 0, nyears-1
 	; data(i, :, 0:nlat-1, :)     	= x(i, 0:152+lags(0), :, :) 
 	; data(i, :, nlat:2*nlat-1, :)	= x(i, 5:152+lags(1), :, :)
 	; data(i, :, 2*nlat:3*nlat-1, :)	= x(i, 10:152+lags(2), :, :)
-    ;; Ziming Chen on 06/05/2023
+    ;; Edited on 06/05/2023
     data(i, :, 0:nlat-1, 0:nlon-1)           = x(i, 0:152+lags(0), :, :) 
     data(i, :, nlat:2*nlat-1, nlon:2*nlon-1) = x(i, 5:152+lags(1), :, :)
     data(i, :, 2*nlat:3*nlat-1, 2*nlon:3*nlon-1) = x(i, 10:152+lags(2), :, :)
