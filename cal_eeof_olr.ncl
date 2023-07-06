@@ -117,7 +117,7 @@ r_eof(:, 2, :, :)   = eof(:, 2*nlat:3*nlat-1, 2*nlon:3*nlon-1)
 ; r_ev_ts(:, nyears-1, :)= ev_ts(:, (nyears-1)*143: ) + 0
 ;
 ;; output 
-s_DirOut = "/global/cfs/cdirs/m1867/zmchen/Work/2023_1/BSISO_SW_Heatwave/Data/Bimodal_index/"
+s_DirOut = "./"
 system("mkdir -p " + s_DirOut)
 s_FileOut           = s_DirOut + "cal_eeof_olr_inReanalysis.nc"
 system("rm -rf " + s_FileOut)
