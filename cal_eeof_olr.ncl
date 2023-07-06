@@ -4,7 +4,7 @@ begin
 
 print("Reading the input file...")
 
-f = addfile("./input.nc", "r")
+f = addfile("./input.nc", "r") ; complete year
 
 dum 	= cd_calendar(f->time,0)
 months 	= toint(dum(:,1))
@@ -15,7 +15,9 @@ olr     = f->anom_bf
 olr    := olr(imonths, {-30:30}, :)
 printVarSummary(olr)
 ;
-
+d_time  = olr&time
+printVarSummary(d_time)
+; exit()
 
 print("Reshape...")
 
@@ -34,6 +36,8 @@ x!0     = "year"
 x&year  = ispan(1980, 2020, 1)
 printVarSummary(x)
 ; print(x&day(:30) + "")
+d_time2 = reshape(d_time, i_dims(:1))
+copy_VarAtts(d_time, d_time2)
 ; exit()
 
 print("stacking up in S-mode for different lags...")
@@ -47,7 +51,7 @@ do i = 0, nyears-1
 	; data(i, :, 0:nlat-1, :)     	= x(i, 0:152+lags(0), :, :) 
 	; data(i, :, nlat:2*nlat-1, :)	= x(i, 5:152+lags(1), :, :)
 	; data(i, :, 2*nlat:3*nlat-1, :)	= x(i, 10:152+lags(2), :, :)
-    ;; Edited on 06/05/2023
+    ;; Ziming Chen on 06/05/2023
     data(i, :, 0:nlat-1, 0:nlon-1)           = x(i, 0:152+lags(0), :, :) 
     data(i, :, nlat:2*nlat-1, nlon:2*nlon-1) = x(i, 5:152+lags(1), :, :)
     data(i, :, 2*nlat:3*nlat-1, 2*nlon:3*nlon-1) = x(i, 10:152+lags(2), :, :)
@@ -81,7 +85,17 @@ printMinMax(ev_ts, False)
 ;
 ; normalize
 ev_ts       = dim_standardize_n_Wrap(ev_ts, 1, 1)
-; exit()
+printVarSummary(ev_ts)
+d_time3     = new(dimsizes(ev_ts(0, :)), double)
+copy_VarAtts(d_time, d_time3)
+do i = 0, nyears-2
+    printVarSummary(d_time2(i, 10:))
+    printVarSummary(d_time3(i*143:(i+1)*143-1))
+    d_time3(i*143:(i+1)*143-1) = d_time2(i, 10:)
+end do
+ev_ts&time := d_time3
+dum        := cd_calendar(ev_ts&time, 0)
+print(dum(0:10, 0) + "-" + dum(0:10, 1) + "-" + dum(0:10, 2) + "-")
 ;
 ;; reshape
 r_eof       = new((/neof, 3, nlat, nlon/), float)
@@ -93,19 +107,19 @@ r_eof(:, 0, :, :)   = eof(:, 0:nlat-1, 0:nlon-1)
 r_eof(:, 1, :, :)   = eof(:, nlat:2*nlat-1, nlon:2*nlon-1)
 r_eof(:, 2, :, :)   = eof(:, 2*nlat:3*nlat-1, 2*nlon:3*nlon-1)
 ;
-;; reshape the PC seriess 
-r_ev_ts     = new((/2, nyears, 143/), float)
-copy_VarCoords(data(:, :, 0, 0), r_ev_ts(0, :, :))
-copy_VarMeta(ev_ts(:, 0), r_ev_ts(:, 0, 0))
-do i = 0, nyears-2
-    r_ev_ts(:, i, :)   = ev_ts(:, i*143:(i+1)*143-1 ) + 0
-end do
-r_ev_ts(:, nyears-1, :)= ev_ts(:, (nyears-1)*143: ) + 0
+; ;; reshape the PC seriess 
+; r_ev_ts     = new((/2, nyears, 143/), float)
+; copy_VarCoords(data(:, :, 0, 0), r_ev_ts(0, :, :))
+; copy_VarMeta(ev_ts(:, 0), r_ev_ts(:, 0, 0))
+; do i = 0, nyears-2
+;     r_ev_ts(:, i, :)   = ev_ts(:, i*143:(i+1)*143-1 ) + 0
+; end do
+; r_ev_ts(:, nyears-1, :)= ev_ts(:, (nyears-1)*143: ) + 0
 ;
 ;; output 
-s_DirOut = "./"
+s_DirOut = "/global/cfs/cdirs/m1867/zmchen/Work/2023_1/BSISO_SW_Heatwave/Data/Bimodal_index/"
 system("mkdir -p " + s_DirOut)
-s_FileOut           = s_DirOut + "EEOF_OLR.nc"
+s_FileOut           = s_DirOut + "cal_eeof_olr_inReanalysis.nc"
 system("rm -rf " + s_FileOut)
 FileOut             = addfile(s_FileOut, "c")
 GAttr               = True
@@ -114,7 +128,7 @@ GAttr@history       = systemfunc("date") + "  " + systemfunc("pwd") + \
 fileattdef(FileOut, GAttr)
 ;
 FileOut->eof        = r_eof
-FileOut->ev_ts      = r_ev_ts
+FileOut->ev_ts      = ev_ts
 ;
 print(s_FileOut + "")
 ;
