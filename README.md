@@ -11,5 +11,5 @@ Steps (Kikuchi, 2021):
 3. cal_bsiso_phase.ncl: Calculate BSISO phase and dates
 
 <p align="center">
-  <img src="https://github.com/sandrolubis/BSISO_Index/blob/main/bsiso_plots.png" width="1000">
+  <img src="plot/bsiso_plots.png" width="1000">
 </p>
