@@ -7,6 +7,9 @@ print("Reading the input file...")
 f = addfile("./input.nc", "r")
 
 dum 	= cd_calendar(f->time,0)
+printVarSummary(dum)
+print(dum(:3, 0) + "-" + dum(:3, 1) + "-" + dum(:3, 2))
+;
 months 	= toint(dum(:,1))
 imonths = ind(months.ge.6 .and. months.le.10) ;JJASO, which is 153 days
 
@@ -17,7 +20,6 @@ printVarSummary(olr)
 ;
 d_time  = olr&time
 printVarSummary(d_time)
-; exit()
 
 print("Reshape...")
 
@@ -107,14 +109,21 @@ r_eof(:, 0, :, :)   = eof(:, 0:nlat-1, 0:nlon-1)
 r_eof(:, 1, :, :)   = eof(:, nlat:2*nlat-1, nlon:2*nlon-1)
 r_eof(:, 2, :, :)   = eof(:, 2*nlat:3*nlat-1, 2*nlon:3*nlon-1)
 ;
-; ;; reshape the PC seriess 
-; r_ev_ts     = new((/2, nyears, 143/), float)
-; copy_VarCoords(data(:, :, 0, 0), r_ev_ts(0, :, :))
-; copy_VarMeta(ev_ts(:, 0), r_ev_ts(:, 0, 0))
-; do i = 0, nyears-2
-;     r_ev_ts(:, i, :)   = ev_ts(:, i*143:(i+1)*143-1 ) + 0
-; end do
-; r_ev_ts(:, nyears-1, :)= ev_ts(:, (nyears-1)*143: ) + 0
+;; check the sign of pattern Sandro's suggestion!
+
+;;; eof 1 : negative - positive dipole from Indian Ocean to Indian subcontinent
+if ( any(r_eof(0, 0, {12:20}, {72:84}) .lt. 0) .or. \
+     any(r_eof(0, 0, {-2.5:0.5}, {75:85}) .gt. 0) ) then
+    r_eof(0, :, :, :) = r_eof(0, :, :, :) * (-1.)
+    ev_ts(0, :)       = ev_ts(0, :) * (-1.)
+    print("reverse the eof1!!!")
+end if
+if ( any(r_eof(1, 0, {-2.5:5}, {80:90}) .lt. 0) .or. \
+     any(r_eof(1, 0, {12.5:17.5}, {128:132}).gt. 0) ) then
+    r_eof(1, :, :, :) = r_eof(1, :, :, :) * (-1.)
+    ev_ts(1, :)       = ev_ts(1, :) * (-1.)
+    print("reverse the eof2!!!")
+end if
 ;
 ;; output 
 s_DirOut = "./"
@@ -133,12 +142,3 @@ FileOut->ev_ts      = ev_ts
 print(s_FileOut + "")
 ;
 end
-
-
-
-
-
-
-
-
-
