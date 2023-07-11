@@ -1,5 +1,7 @@
 # BSISO Index based on Extended-EOF Analysis
 
+By Sandro W. Lubis and Ziming Chen (PNNL)
+
 This script is used to construct BSISO Index based on EEOF (lags -10, -5, and 0) following Kikuchi (2021) https://doi.org/10.2151/jmsj.2021-045
 
 Data: Daily NOAA interpolated OLR dataset (Liebmann & Smith, 1996)
