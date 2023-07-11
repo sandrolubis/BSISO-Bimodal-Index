@@ -1,5 +1,9 @@
 
-f1 = addfile("cal_eeof_olr_inReanalysis.nc", "r")
+s_DirRead = "./"
+f1 = addfile(s_DirRead + "cal_eeof_olr_inReanalysis.nc", "r")
+
+system("ls -lh " + s_DirRead + "cal_eeof_olr_inReanalysis.nc")
+; exit()
 
 x     = f1->ev_ts
 printVarSummary(x)  ; pc
@@ -7,7 +11,7 @@ printVarSummary(x)  ; pc
 ntime=dimsizes(x&time)
 
 dates=cd_calendar(x&time,-2)
-print(dates)
+print(dates(:10))
 
 
 print("Calculating BSISO index...")
@@ -18,7 +22,7 @@ r&time = ispan (0, ntime-1,1)
 
 pi = acos(-1.0)
 
-theta = atan2(x(evn|1, time|:), x(evn|0, time|:))
+theta = atan2(-1 * x(0, :), -1 * x(1, :))
 
 theta = theta * 180.0 / pi
 theta!0 = "time"
@@ -33,6 +37,7 @@ print("Indexing...")
 
 global_phase = new(ntime, integer)
 
+; ;; Ziming CHEN: 2023.07.07
 do i = 0, ntime - 1
 	if (r(i).le.1) then
 		global_phase(i) = 0  ; inactive phase
@@ -66,7 +71,9 @@ end do
 
 
 printVarSummary(global_phase)
+print(global_phase(:50) + "")
 printMinMax(global_phase,True)
+; exit()
 
 bsiso_phase     = global_phase
 bsiso_phase!0="time"
@@ -81,6 +88,11 @@ fout1 = "bsiso_phase.nc"
 
 system("rm " + fout1)
 g1 = addfile(fout1, "c")
+;; Ziming Chen: 2023.07.09
+GAttr 			= True
+GAttr@history 	= systemfunc("date") + "  " + systemfunc("pwd") + \
+					"/cal_bsiso_phase.ncl"
+fileattdef(g1, GAttr)
 g1->bsiso_phase = bsiso_phase
 
 print("Closing the output file...")
