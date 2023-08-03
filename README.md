@@ -14,10 +14,4 @@ Steps (Kikuchi, 2021):
 </p>
 
 
-Here is the composite of OLR anomaly using the output (phases, dates) from the code. 
-
-<p align="center">
-  <img src="plot/composite_bsiso.png" width="1000">
-</p>
-
 
