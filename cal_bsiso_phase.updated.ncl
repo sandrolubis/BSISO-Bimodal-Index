@@ -1,6 +1,3 @@
-;; Ziming CHEN: 2023.07.11
-; attention: we cal the bsiso phase in the entire period 
-;
 undef("my_atan")
 function my_atan(y, x)
 ; in this code, we compute the atan by the ratio of (y/x)
@@ -33,7 +30,7 @@ return(r_theta)
 ;
 end
 
-
+;;; Start from here!;;;;
 
 begin
 s_DirRead = "./"
@@ -42,7 +39,6 @@ system("ls -lh " + s_DirRead + "cal_eeof_olr_inReanalysis.nc")
 
 x     = f1->ev_ts
 printVarSummary(x)  ; pc
-
 ntime=dimsizes(x&time)
 
 dates=cd_calendar(x&time,-2)
@@ -54,14 +50,11 @@ print("Calculating BSISO index...")
 r = sqrt(x(evn|0, time|:) ^ 2.0 + x(evn|1, time|:) ^ 2.0)
 r!0 = "time"
 r&time = ispan (0, ntime-1,1)
-
 pi = acos(-1.0)
 
-;
-;; Ziming CHEN: 2023.07.07
+
 ; printVarSummary(x) ; [evn | 2] x [time | 5863]
 theta 	   = my_atan(-1. * x(0, :), -1. * x(1, :))
-
 theta 	   = theta * 180.0 / pi
 theta!0    = "time"
 theta&time = ispan (0, ntime-1,1)
@@ -76,7 +69,7 @@ print("Indexing...")
 
 global_phase = new(ntime, integer)
 
-;
+
 do i = 0, ntime - 1
 	; if (r(i).le.1) then
 	; 	global_phase(i) = 0  ; inactive phase
@@ -163,7 +156,6 @@ fout1 = "bsiso_phase.nc"
 
 system("rm " + fout1)
 g1 = addfile(fout1, "c")
-;; Ziming Chen: 2023.07.09
 GAttr 			= True
 GAttr@history 	= systemfunc("date") + "  " + systemfunc("pwd") + \
 					"/cal_bsiso_phase.updated.ncl"
