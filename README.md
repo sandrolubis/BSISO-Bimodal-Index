@@ -1,6 +1,7 @@
 # BSISO Index Based on Extended EOF Analysis
 
-**Dr. Sandro W. Lubis and Dr. Ziming Chen**
+**By Dr. Sandro W. Lubis and Dr. Ziming Chen**
+
 Pacific Northwest National Laboratory (PNNL)
 
 This repository provides NCL scripts for constructing the **Boreal Summer Intraseasonal Oscillation (BSISO) Index** using Extended Empirical Orthogonal Function (**EEOF**) analysis following [Kikuchi (2021)](https://doi.org/10.2151/jmsj.2021-045).
