@@ -6,6 +6,11 @@ This repository provides NCL scripts for constructing the **Boreal Summer Intras
 
 The BSISO index is derived from daily NOAA interpolated Outgoing Longwave Radiation (**OLR**) data using three time lags: **−10, −5, and 0 days**.
 
+If you use this code or BSISO index, please cite:
+
+Lubis, S. W., Chen, Z., Lu, J., Hagos, S., Chang, C.-C., & Leung, L. R. (2024). Enhanced Pacific Northwest heat extremes and wildfire risks induced by the boreal summer intraseasonal oscillation. *npj Climate and Atmospheric Science, 7*, 232.
+https://doi.org/10.1038/s41612-024-00766-3
+
 ## Data
 
 * **Variable:** Daily Outgoing Longwave Radiation (OLR)
