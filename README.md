@@ -85,20 +85,6 @@ BSISO phase for active events with normalized amplitude **> 1**:
   <img src="plot/bsiso_plots.png" width="1000">
 </p>
 
-## References
-
-**BSISO methodology**
-
-Kikuchi, K. (2021). The Boreal Summer Intraseasonal Oscillation (BSISO): A review. *Journal of the Meteorological Society of Japan, 99*, 933–972.
-https://doi.org/10.2151/jmsj.2021-045
-
-**OLR dataset**
-
-Liebmann, B., & Smith, C. A. (1996). Description of a complete (interpolated) outgoing longwave radiation dataset. *Bulletin of the American Meteorological Society, 77*, 1275–1277.
-
-**Lanczos filtering**
-
-Duchon, C. E. (1979). Lanczos filtering in one and two dimensions. *Journal of Applied Meteorology, 18*, 1016–1022.
 
 ## Citation
 
