@@ -2,7 +2,7 @@
 
 **Dr. Sandro W. Lubis and Dr. Ziming Chen** (PNNL)
 
-This repository provides NCL scripts for constructing the **Boreal Summer Intraseasonal Oscillation (BSISO) Index** using Extended Empirical Orthogonal Function (**EEOF**) analysis following [Kikuchi (2021)](https://doi.org/10.2151/jmsj.2021-045).
+This repository provides NCL and Python scripts for constructing the **Boreal Summer Intraseasonal Oscillation (BSISO) Index** using Extended Empirical Orthogonal Function (**EEOF**) analysis following [Kikuchi (2021)](https://doi.org/10.2151/jmsj.2021-045).
 
 The BSISO index is derived from daily NOAA interpolated Outgoing Longwave Radiation (**OLR**) data using three time lags: **−10, −5, and 0 days**.
 
