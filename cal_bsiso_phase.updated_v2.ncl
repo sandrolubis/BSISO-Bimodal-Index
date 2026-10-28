@@ -10,7 +10,7 @@ begin
     r_x = where(r_x .eq. 0, r_x@_FillValue, r_x)
 
     r_Value = r_y / r_x
-    r_theta = atan(r_Value)  ; range: -pi/2 < theta < pi/2
+    r_theta = atan(r_Value)
 
     ;;; Quadrants
 
@@ -52,13 +52,13 @@ print("Calculating BSISO index...")
 
 
 ;--------------------------------------------------
-; Calculate amplitude
+; Calculate BSISO amplitude
 ;--------------------------------------------------
 
 r = sqrt(x(evn|0, time|:) ^ 2.0 + x(evn|1, time|:) ^ 2.0)
 
 r!0 = "time"
-r&time = ispan(0, ntime-1, 1)
+r&time = x&time
 
 pi = acos(-1.0)
 
@@ -92,7 +92,7 @@ theta = my_atan(-1. * x(0,:), -1. * x(1,:))
 theta = theta * 180.0 / pi
 
 theta!0 = "time"
-theta&time = ispan(0, ntime-1, 1)
+theta&time = x&time
 
 printVarSummary(r)
 printVarSummary(theta)
@@ -230,7 +230,7 @@ print("Opening the output file...")
 
 fout1 = "bsiso_phase.nc"
 
-system("rm " + fout1)
+system("rm -f " + fout1)
 
 g1 = addfile(fout1, "c")
 
@@ -241,11 +241,18 @@ GAttr@history = systemfunc("date") + "  " + systemfunc("pwd") + \
 fileattdef(g1, GAttr)
 
 
-; BSISO phases
+;--------------------------------------------------
+; Output BSISO phases
+;--------------------------------------------------
+
 g1->bsiso_phase = bsiso_phase
 g1->bsiso_phase_nAmpGe1 = global_phase_nAmpGe1
 
-; Principal components and amplitude
+
+;--------------------------------------------------
+; Output PC1, PC2, and amplitude
+;--------------------------------------------------
+
 g1->PC1 = PC1
 g1->PC2 = PC2
 g1->amp = amp
