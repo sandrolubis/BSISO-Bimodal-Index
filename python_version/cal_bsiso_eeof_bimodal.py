@@ -18,7 +18,8 @@ The workflow:
     2. Selects the tropical domain 30°S-30°N.
     3. Applies a 25-90 day Lanczos band-pass filter with 141 weights.
     4. Constructs extended EOFs (EEOFs) using lags -10, -5, and 0 days.
-    5. Calculates and standardizes the leading two principal components.
+    5. Calculates the leading two principal components and standardizes them
+       using the JJASO EEOF training samples (Kikuchi's convention).
     6. Derives BSISO amplitude and phases 1-8.
     7. Saves the EEOF and BSISO index to NetCDF.
     8. Produces an EEOF verification plot centered at 120°E.
@@ -68,7 +69,8 @@ YEAR_END = 2020
 LAT_MIN = -30.0
 LAT_MAX = 30.0
 
-# EEOF training season June-October (JJASO).
+# EEOF training season June-October (JJASO). The SAME seasonal samples are
+# used to calculate the standard deviations for normalizing PC1 and PC2.
 TRAIN_MONTHS = (6, 7, 8, 9, 10)
 
 # EEOF lags
@@ -497,6 +499,10 @@ def project_full_record(filtered_olr, eof, lags=LAGS, chunk_size=512):
     """
     Project the complete filtered 1980-2020 record onto the EEOFs.
 
+    Following Kikuchi's bimodal ISO method, normalize the PCs using their
+    standard deviations over the EEOF TRAINING SAMPLES (JJASO), not over
+    the complete all-season 1980-2020 record.
+
     With lags [-10,-5,0], output date t uses:
         OLR(t-10), OLR(t-5), OLR(t)
 
@@ -549,21 +555,47 @@ def project_full_record(filtered_olr, eof, lags=LAGS, chunk_size=512):
     # NCL eofunc_ts_n subtracts the mean of each PC time series.
     pcs -= pcs.mean(axis=1, keepdims=True)
 
-    raw_pc_std = pcs.std(axis=1, ddof=0)
-
-    if np.any(raw_pc_std == 0):
-        raise ValueError("A PC has zero standard deviation.")
-
-    # NCL dim_standardize(..., opt=1): population standard deviation.
-    pcs /= raw_pc_std[:, None]
-
     pc_time = filtered_olr["time"].isel(
         time=slice(-min_lag, None)
     )
 
+    # Match the calendar samples that actually entered the EEOF fit.
+    # The lagged EEOF training matrix discards the first -min(lags) days
+    # of each training season (10 days for lags -10,-5,0).
+    years = np.asarray(pc_time.dt.year.values)
+    months = np.asarray(pc_time.dt.month.values)
+    training_mask = np.zeros(nout, dtype=bool)
+    first_days_discarded = -min_lag
+
+    for year in range(YEAR_START, YEAR_END + 1):
+        season_indices = np.flatnonzero(
+            (years == year) & np.isin(months, TRAIN_MONTHS)
+        )
+        if season_indices.size <= first_days_discarded:
+            raise ValueError(
+                f"Not enough EEOF training days for {year}: "
+                f"{season_indices.size}"
+            )
+        training_mask[season_indices[first_days_discarded:]] = True
+
+    # Population standard deviation, consistent with NCL dim_standardize.
+    raw_pc_std = pcs[:, training_mask].std(axis=1, ddof=0)
+
+    if np.any(raw_pc_std == 0):
+        raise ValueError("A PC has zero standard deviation.")
+
+    # Only the standard-deviation reference period changes: all dates
+    # are divided by the SAME seasonally derived PC1/PC2 factors.
+    pcs /= raw_pc_std[:, None]
+
     print(f"  PC start = {pc_time.values[0]}")
     print(f"  PC end   = {pc_time.values[-1]}")
     print(f"  Ntime    = {pc_time.size}")
+    print(
+        "  PC normalization: training months "
+        f"{TRAIN_MONTHS}, {YEAR_START}-{YEAR_END}; "
+        f"{training_mask.sum()} EEOF samples"
+    )
 
     return pcs.astype(DTYPE), pc_time, raw_pc_std
 
@@ -972,6 +1004,10 @@ def write_outputs(
             "training_years": f"{YEAR_START}-{YEAR_END}",
             "training_months": ",".join(map(str, TRAIN_MONTHS)),
             "eeof_lags_days": ",".join(map(str, LAGS.tolist())),
+            "pc_normalization": (
+                "PC mean removed over full record; standard deviation "
+                "calculated over EEOF training samples only"
+            ),
             "sign_method": SIGN_METHOD,
         },
     )
@@ -1031,6 +1067,14 @@ def write_outputs(
                     "units": "1",
                 },
             ),
+            "amp": (
+                ("time",),
+                amplitude,
+                {
+                    "long_name": "BSISO amplitude sqrt(PC1^2 + PC2^2)",
+                    "units": "1",
+                },
+            ),
             "bsiso_angle": (
                 ("time",),
                 theta,
@@ -1055,6 +1099,22 @@ def write_outputs(
                     "units": "1",
                 },
             ),
+            "PC1": (
+                ("time",),
+                pcs[0],
+                {
+                    "long_name": "standardized EEOF1 principal component",
+                    "units": "1",
+                },
+            ),
+            "PC2": (
+                ("time",),
+                pcs[1],
+                {
+                    "long_name": "standardized EEOF2 principal component",
+                    "units": "1",
+                },
+            ),
         },
         coords={
             "time": pc_time,
@@ -1067,6 +1127,12 @@ def write_outputs(
                 f"Lanczos band-pass, {FILTER_NWEIGHTS} weights"
             ),
             "active_definition": f"amplitude > {AMP_THRESHOLD:g}",
+            "pc_normalization": (
+                "PC mean removed over full record; PC1 and PC2 divided "
+                "by standard deviations over EEOF training samples only"
+            ),
+            "pc_normalization_months": ",".join(map(str, TRAIN_MONTHS)),
+            "pc_normalization_years": f"{YEAR_START}-{YEAR_END}",
         },
     )
 
@@ -1088,6 +1154,9 @@ def write_outputs(
             "bsiso_amplitude": {
                 "dtype": "float32",
             },
+            "amp": {
+                "dtype": "float32",
+            },
             "bsiso_angle": {
                 "dtype": "float32",
             },
@@ -1095,6 +1164,12 @@ def write_outputs(
                 "dtype": "float32",
             },
             "pc2": {
+                "dtype": "float32",
+            },
+            "PC1": {
+                "dtype": "float32",
+            },
+            "PC2": {
                 "dtype": "float32",
             },
             "time": time_encoding,
